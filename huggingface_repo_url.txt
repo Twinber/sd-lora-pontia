@@ -1,0 +1,1 @@
+https://huggingface.co/Twinber/sd-v1-4-oldbook-illustrations-lora

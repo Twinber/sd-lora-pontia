@@ -1,0 +1,1066 @@
+import sys
+from pathlib import Path
+import weasyprint
+
+BASE_DIR = Path("/home/twinber/Projects/Master-IA/11-Generacion-Imagen")
+ASSETS_DIR = BASE_DIR / "extra/pdf_assets"
+PDF_OUT = BASE_DIR / "Memoria_Presentacion_Proyecto_LoRA_OldBook.pdf"
+
+# HTML without f-string to prevent backslash escapes
+html_template = """<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Memoria Técnica y Presentación: Fine-Tuning LoRA SD & SDXL</title>
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 20mm 15mm 20mm 15mm;
+    @top-left {
+      content: "Máster IA PontIA · Módulo 11: Modelos de Generación de Imagen";
+      font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+      font-size: 8pt;
+      color: #64748b;
+      font-weight: 500;
+    }
+    @top-right {
+      content: "Daniel Aguilera González · Proyecto LoRA OldBook";
+      font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+      font-size: 8pt;
+      color: #64748b;
+    }
+    @bottom-left {
+      content: "https://huggingface.co/Twinber/sdxl-oldbook-illustrations-lora";
+      font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+      font-size: 7.5pt;
+      color: #0284c7;
+    }
+    @bottom-right {
+      content: "Página " counter(page) " de " counter(pages);
+      font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+      font-size: 8pt;
+      color: #64748b;
+      font-weight: 600;
+    }
+  }
+
+  @page:first {
+    margin: 0;
+    @top-left { content: none; }
+    @top-right { content: none; }
+    @bottom-left { content: none; }
+    @bottom-right { content: none; }
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    color: #1e293b;
+    line-height: 1.5;
+    font-size: 9.5pt;
+  }
+
+  h1, h2, h3, h4 {
+    color: #0f172a;
+    font-weight: 700;
+    margin-top: 0;
+    page-break-after: avoid;
+  }
+
+  h1 {
+    font-size: 18pt;
+    line-height: 1.25;
+    border-bottom: 2px solid #0284c7;
+    padding-bottom: 5px;
+    margin-bottom: 12px;
+  }
+
+  h2 {
+    font-size: 13pt;
+    line-height: 1.3;
+    color: #0369a1;
+    margin-top: 14pt;
+    margin-bottom: 6pt;
+    border-left: 3px solid #0284c7;
+    padding-left: 8px;
+  }
+
+  h3 {
+    font-size: 10.5pt;
+    color: #1e293b;
+    margin-top: 10pt;
+    margin-bottom: 4pt;
+  }
+
+  p {
+    margin: 0 0 7pt 0;
+    text-align: justify;
+  }
+
+  .page-break {
+    page-break-before: always;
+  }
+
+  /* PORTADA */
+  .cover-container {
+    height: 100vh;
+    padding: 35mm 25mm 25mm 25mm;
+    background: linear-gradient(135deg, #090d16 0%, #0f172a 60%, #0369a1 100%);
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .cover-header {
+    border-left: 4px solid #38bdf8;
+    padding-left: 15px;
+  }
+
+  .cover-badge {
+    display: inline-block;
+    background: rgba(56, 189, 248, 0.15);
+    color: #38bdf8;
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 9pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+  }
+
+  .cover-title {
+    font-size: 26pt;
+    line-height: 1.15;
+    color: #ffffff;
+    font-weight: 800;
+    margin: 0 0 10px 0;
+  }
+
+  .cover-subtitle {
+    font-size: 14pt;
+    color: #94a3b8;
+    font-weight: 400;
+    line-height: 1.4;
+  }
+
+  .cover-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin: 40px 0;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 20px;
+  }
+
+  .meta-item label {
+    display: block;
+    font-size: 8pt;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #38bdf8;
+    font-weight: 600;
+  }
+
+  .meta-item span {
+    font-size: 10pt;
+    color: #f8fafc;
+    font-weight: 500;
+  }
+
+  .cover-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    padding-top: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 8.5pt;
+    color: #94a3b8;
+  }
+
+  /* TABLAS */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8pt 0 12pt 0;
+    font-size: 8.5pt;
+  }
+
+  th, td {
+    padding: 5pt 7pt;
+    text-align: left;
+    border: 1px solid #cbd5e1;
+  }
+
+  th {
+    background-color: #f1f5f9;
+    color: #0f172a;
+    font-weight: 600;
+  }
+
+  tr:nth-child(even) {
+    background-color: #f8fafc;
+  }
+
+  .table-highlight {
+    background-color: #e0f2fe !important;
+    font-weight: 600;
+  }
+
+  /* CAJAS Y TARJETAS */
+  .card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 8pt 10pt;
+    margin-bottom: 8pt;
+    break-inside: avoid;
+  }
+
+  .card-blue {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-left: 4px solid #0284c7;
+  }
+
+  .card-amber {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-left: 4px solid #d97706;
+  }
+
+  .card-emerald {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-left: 4px solid #16a34a;
+  }
+
+  /* IMAGENES */
+  .figure-box {
+    margin: 8pt 0;
+    text-align: center;
+    break-inside: avoid;
+  }
+
+  .figure-box img {
+    max-width: 100%;
+    border-radius: 4px;
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  .figure-caption {
+    font-size: 8pt;
+    color: #64748b;
+    margin-top: 3pt;
+    font-style: italic;
+  }
+
+  .grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10pt;
+    margin: 8pt 0;
+  }
+
+  .grid-3col {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8pt;
+    margin: 8pt 0;
+  }
+
+  /* CODE BLOCKS */
+  pre {
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 7pt 9pt;
+    border-radius: 5px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 8pt;
+    line-height: 1.4;
+    margin: 6pt 0 8pt 0;
+    overflow-x: hidden;
+    break-inside: avoid;
+  }
+
+  code {
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 8.5pt;
+    background: #e2e8f0;
+    padding: 1px 4px;
+    border-radius: 3px;
+    color: #0f172a;
+  }
+
+  pre code {
+    background: transparent;
+    padding: 0;
+    color: inherit;
+  }
+
+  .badge-tag {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 7.5pt;
+    font-weight: 600;
+  }
+  .badge-blue { background: #e0f2fe; color: #0369a1; }
+  .badge-green { background: #dcfce7; color: #15803d; }
+  .badge-purple { background: #f3e8ff; color: #7e22ce; }
+
+  ul, ol {
+    margin: 0 0 8pt 0;
+    padding-left: 16pt;
+  }
+
+  li {
+    margin-bottom: 2pt;
+  }
+</style>
+</head>
+<body>
+
+<!-- ========================================== -->
+<!-- PÁGINA 1: PORTADA EJECUTIVA               -->
+<!-- ========================================== -->
+<div class="cover-container">
+  <div class="cover-header">
+    <div class="cover-badge">Memoria de Proyecto · Módulo 11</div>
+    <h1 class="cover-title">Modelos de Generación de Imagen:<br>Adaptación Eficiente con LoRA</h1>
+    <div class="cover-subtitle">
+      De Stable Diffusion v1.4 a la Alta Resolución Nativa en SDXL 1.0 (1024×1024)<br>
+      Finetuning sobre el Dataset <em>gigant/oldbookillustrations</em>
+    </div>
+  </div>
+
+  <div class="cover-meta-grid">
+    <div class="meta-item">
+      <label>Autor / Estudiante</label>
+      <span>Daniel Aguilera González (Twinber)</span>
+    </div>
+    <div class="meta-item">
+      <label>Programa Académico</label>
+      <span>Máster en IA y Deep Learning · PontIA</span>
+    </div>
+    <div class="meta-item">
+      <label>Módulo</label>
+      <span>Módulo 11: Modelos de Generación de Imagen</span>
+    </div>
+    <div class="meta-item">
+      <label>Fecha de Finalización</label>
+      <span>25 de Octubre de 2026</span>
+    </div>
+    <div class="meta-item">
+      <label>Modelo Oficial (HF Hub)</label>
+      <span>Twinber/sd-v1-4-oldbook-illustrations-lora</span>
+    </div>
+    <div class="meta-item">
+      <label>Modelo SDXL Avanzado (HF Hub)</label>
+      <span>Twinber/sdxl-oldbook-illustrations-lora</span>
+    </div>
+  </div>
+
+  <div class="cover-footer">
+    <div>PontIA Institute of Artificial Intelligence · 2026</div>
+    <div>Infraestructura: Tesla T4 (Colab) &amp; NVIDIA A40 48GB (RunPod)</div>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- PÁGINA 2: RESUMEN EJECUTIVO E ÍNDICE      -->
+<!-- ========================================== -->
+<div class="page-break"></div>
+
+<h1>1. Resumen Ejecutivo y Marco del Proyecto</h1>
+
+<div class="card card-blue">
+  <strong>Objetivo Central:</strong> Adaptar modelos de difusión probabilísticos preentrenados hacia un estilo visual altamente específico y texturizado —el grabado y achurado histórico del siglo XIX— aplicando la técnica matemática de <strong>Low-Rank Adaptation (LoRA)</strong> sobre capas de atención cruzada y proyecciones densas de la arquitectura UNet, minimizando el footprint computacional sin degradar las capacidades semánticas fundacionales.
+</div>
+
+<p>
+El proyecto se ha articulado en dos niveles complementarios de investigación técnica y desarrollo:
+</p>
+
+<div class="grid-2col">
+  <div class="card">
+    <h3 style="margin-top:0; color:#0369a1;">Nivel 1: Implementación Oficial (Requisitos de Entrega)</h3>
+    <ul>
+      <li><strong>Modelo Base:</strong> <code>CompVis/stable-diffusion-v1-4</code> (860M UNet).</li>
+      <li><strong>Resolución:</strong> Normalizada a 512×512 píxeles.</li>
+      <li><strong>Dataset:</strong> Subconjunto de <code>gigant/oldbookillustrations</code>.</li>
+      <li><strong>Hardware:</strong> GPU NVIDIA Tesla T4 (16 GB) en Google Colab.</li>
+      <li><strong>Adaptación:</strong> LoRA (r=8, alpha=8) en Cross-Attention.</li>
+      <li><strong>Optimización:</strong> Tensor Cores en FP16 (de 47 min a 3 min de cómputo).</li>
+      <li><strong>Publicación:</strong> Repositorio en Hugging Face con Model Card oficial.</li>
+      <li><strong>Bonus:</strong> App interactiva Streamlit y probador en Colab.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0; color:#0369a1;">Nivel 2: Investigación Avanzada (Proyecto Extra SDXL)</h3>
+    <ul>
+      <li><strong>Modelo Base:</strong> <code>stabilityai/stable-diffusion-xl-base-1.0</code> (2.6B params).</li>
+      <li><strong>Resolución:</strong> Nativa 1024×1024 píxeles (alta fidelidad de escaneo).</li>
+      <li><strong>Dataset:</strong> Totalidad de las <strong>4.154 imágenes</strong> a 1600px.</li>
+      <li><strong>Hardware:</strong> NVIDIA A40 (48 GB VRAM) en RunPod Secure Cloud.</li>
+      <li><strong>Torneo de Hiperparámetros:</strong> 3 variantes (r=16, r=32, r=64 con FFN).</li>
+      <li><strong>Evolución Temporal:</strong> 6 checkpoints evaluados a 500 y 1.000 pasos.</li>
+      <li><strong>Benchmark Dual:</strong> 10 prompts (5 vintage + 5 contemporáneos).</li>
+      <li><strong>Entregables:</strong> Matriz Maestra 10×4, tiras y repo SDXL en Hugging Face.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>Estructura del Documento</h2>
+<ol>
+  <li><strong>Resumen Ejecutivo y Marco del Proyecto</strong> (Visión global y niveles de desarrollo).</li>
+  <li><strong>Fase 1: Implementación Oficial — SD v1.4</strong> (Fundamentos, código, optimizaciones FP16 y resultados).</li>
+  <li><strong>Fase 2: Arquitectura y Precomputación en SDXL 1.0</strong> (Espacio latente 128×128, dual CLIP y bfloat16).</li>
+  <li><strong>Torneo de Hiperparámetros en RunPod</strong> (Variantes A, B y C: rangos, capas FFN y métricas empíricas).</li>
+  <li><strong>Banco de Pruebas Benchmark y Resultados Visuales</strong> (Matriz de 10 prompts y análisis cualitativo).</li>
+  <li><strong>Matrices Comparativas y Progresión Temporal</strong> (Tiras 4-columnas y evolución por épocas).</li>
+  <li><strong>Publicación en Hugging Face Hub y Gobernanza Cloud</strong> (Model Cards, pesos y finanzas en RunPod).</li>
+  <li><strong>Guía de Ficheros Entregados y Conclusiones de Ingeniería</strong> (Mapeo de archivos y lecciones aprendidas).</li>
+</ol>
+
+<!-- ========================================== -->
+<!-- PÁGINA 3: FASE 1 (SD 1.4)                 -->
+<!-- ========================================== -->
+<div class="page-break"></div>
+
+<h1>2. Fase 1: Implementación Oficial — Stable Diffusion v1.4</h1>
+
+<h2>2.1. Fundamentos Teóricos y Geometría de Datos</h2>
+<p>
+Los modelos de difusión latente (LDM) operan sobre una representación comprimida z = E(x) provista por un Autoencoder Variacional (VAE) con factor de compresión espacial 8x. El entrenamiento busca optimizar la función de pérdida sobre el ruido predictivo en el espacio latente:
+</p>
+<div style="text-align: center; margin: 8pt 0; font-family: 'Times New Roman', serif; font-size: 11pt;">
+  <em>L<sub>LDM</sub> = E<sub>z ~ E(x), y, ε ~ N(0, I), t</sub> [ || ε - ε<sub>θ</sub>(z<sub>t</sub>, t, τ<sub>θ</sub>(y)) ||<sup>2</sup> ]</em>
+</div>
+<p>
+Donde z<sub>t</sub> es el latente perturbado en el paso temporal t, τ<sub>θ</sub>(y) son los embeddings del codificador CLIP y ε<sub>θ</sub> es la red predictiva UNet.
+</p>
+
+<div class="card card-amber">
+  <strong>Tratamiento de la Geometría del Dataset (<code>gigant/oldbookillustrations</code>):</strong>
+  Los grabados originales tienen una resolución nativa de 1600px en el lado mayor con ratios de aspecto irregulares. En lugar de un <code>Resize((512, 512))</code> directo —el cual provocaría una deformación anamórfica aberrante aplastando figuras y distorsionando el achurado— se implementó una estrategia combinada de dos fases:
+  <ol style="margin-top: 4pt; margin-bottom: 0;">
+    <li><strong><code>transforms.Resize(512, interpolation=InterpolationMode.BILINEAR)</code>:</strong> Escala el lado menor a 512 píxeles conservando la proporción original.</li>
+    <li><strong><code>transforms.CenterCrop(512)</code>:</strong> Extrae la región nuclear cuadrada de mayor densidad artística sin introducir deformación geométrica.</li>
+  </ol>
+</div>
+
+<h2>2.2. Inyección de LoRA y Optimización en Google Colab</h2>
+<p>
+Para evitar el coste prohibitivo de actualizar los 860 millones de parámetros de la UNet, se desacopló el incremento de pesos ΔW en dos matrices de bajo rango: W = W<sub>0</sub> + (α / r) · B · A, donde A ∈ ℝ<sup>r × d<sub>in</sub></sup> y B ∈ ℝ<sup>d<sub>out</sub> × r</sup>, con rango r=8 y factor de escala α=8.
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Hiperparámetro</th>
+      <th>Valor Oficial</th>
+      <th>Justificación Técnica</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Capas Adaptadas</strong></td>
+      <td><code>to_k, to_q, to_v, to_out.0</code></td>
+      <td>Proyecciones de Cross-Attention (donde el texto modula las características espaciales).</td>
+    </tr>
+    <tr>
+      <td><strong>Rango LoRA (r) / Alpha (α)</strong></td>
+      <td>r=8, α=8</td>
+      <td>Ratio α/r = 1.0. Preserva la escala de activación sin saturar pesos base.</td>
+    </tr>
+    <tr>
+      <td><strong>Learning Rate</strong></td>
+      <td>1 × 10<sup>-4</sup> (AdamW)</td>
+      <td>Tasa óptima para converger rápidamente sin destruir representaciones previas.</td>
+    </tr>
+    <tr>
+      <td><strong>Batch Size Efectivo</strong></td>
+      <td>4 (Batch 1 × Grad Accum 4)</td>
+      <td>Simula tamaño de lote estable manteniendo el consumo de VRAM por debajo de 8 GB.</td>
+    </tr>
+    <tr>
+      <td><strong>Precisión Mixta</strong></td>
+      <td>FP16 (Tensor Cores)</td>
+      <td><strong>Salto clave:</strong> Redujo el tiempo por época de 47 min a sólo 3 min en Tesla T4.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ========================================== -->
+<!-- PÁGINA 4: RESULTADOS FASE 1               -->
+<!-- ========================================== -->
+<div class="page-break"></div>
+
+<h1>3. Resultados Oficiales: Stable Diffusion v1.4</h1>
+
+<h2>3.1. Evaluación Comparativa con Semilla Fija (Seed 42)</h2>
+<p>
+Para verificar de manera incontrastable el efecto de LoRA, se generaron imágenes con el modelo base original (sin adaptador) y con el modelo finetuneado, utilizando idéntica semilla determinista (42), planificador DPMSolverMultistepScheduler y 30 pasos de inferencia.
+</p>
+
+<div class="figure-box">
+  <img src="ASSETS_DIR_PLACEHOLDER/comparativa_antes_despues.jpg" style="max-height: 220px;" alt="Comparativa Antes y Después Oficial">
+  <div class="figure-caption">Figura 1: Comparativa oficial antes/después para el prompt: <em>"an antique plate illustration of an old man with a long beard and ragged clothes, sitting on a wooden boat fishing in a calm lake"</em> (512×512).</div>
+</div>
+
+<div class="card card-emerald">
+  <strong>Diagnóstico Visual de la Metamorfosis:</strong>
+  <ul>
+    <li><strong>Modelo Base (Izquierda):</strong> Produce una imagen fotorrealista contemporánea, con iluminación digital suave y paleta cromática completa. Carece por completo de la textura de papel y de la técnica gráfica de época.</li>
+    <li><strong>Modelo LoRA (Derecha):</strong> El adaptador transforma radicalmente la estética: suprime el color digital introduciendo tinta monocromática sobre fondo crema envejecido, modela las sombras mediante achurado manual (<em>cross-hatching</em>) y refleja el grano de las planchas de cobre del siglo XIX.</li>
+  </ul>
+</div>
+
+<h2>3.2. Prueba de Generalización Externa: Escena Contemporánea</h2>
+<div class="figure-box">
+  <img src="ASSETS_DIR_PLACEHOLDER/comparativa_hombre_perro.jpg" style="max-height: 200px;" alt="Generalización Hombre y Perro">
+  <div class="figure-caption">Figura 2: Prueba de generalización con prompt cotidiano: <em>"a man walking with his dog in the park"</em> (Semilla 42).</div>
+</div>
+<p>
+Incluso ante conceptos genéricos y modernos, el LoRA sobreescribe el fotorrealismo por defecto transformando la estampa en una viñeta editorial clásica con contornos entintados y sombreado lineal.
+</p>
+
+<div class="card">
+  <strong>Enlaces y Entregables Oficiales de la Fase 1:</strong>
+  <ul>
+    <li><strong>Hugging Face Hub:</strong> <a href="https://huggingface.co/Twinber/sd-v1-4-oldbook-illustrations-lora">https://huggingface.co/Twinber/sd-v1-4-oldbook-illustrations-lora</a></li>
+    <li><strong>Cuaderno de Entrenamiento:</strong> <code>entrega_finetuning_lora_oldbook.ipynb</code></li>
+    <li><strong>Probador Interactivo (Colab):</strong> <code>bonus/probador_interactivo_lora_colab.ipynb</code></li>
+    <li><strong>Aplicación Gráfica (Streamlit):</strong> <code>bonus/app.py</code></li>
+  </ul>
+</div>
+
+<!-- ========================================== -->
+<!-- PÁGINA 5: FASE 2 (SDXL PRECOMPUTACIÓN)     -->
+<!-- ========================================== -->
+<div class="page-break"></div>
+
+<h1>4. Fase 2: Investigación Avanzada — SDXL 1.0 en RunPod</h1>
+
+<h2>4.1. Motivación y Arquitectura Fundacional SDXL</h2>
+<p>
+Habiendo satisfecho los requisitos del Máster, se decidió abordar las limitaciones de SD 1.4: su baja resolución (512px) y la simplificación de texto mediante un único CLIP ViT-L. <strong>Stable Diffusion XL 1.0 Base</strong> ofrece:
+</p>
+<ul>
+  <li><strong>Resolución Nativa 1024×1024:</strong> Espacio latente de 128×128 canales, permitiendo capturar el microdetalle de los escaneos a 1600px sin compresión destructiva.</li>
+  <li><strong>Doble Codificador de Texto:</strong> Combina CLIP ViT-L/14 (768 dim) y OpenCLIP ViT-bigG/14 (1280 dim) totalizando un vector condicional de 2048 dimensiones, más embeddings proyectados de <em>pooled text</em>.</li>
+  <li><strong>UNet de 2.600 Millones de Parámetros:</strong> Tres bloques de resolución con bloques de transformación más profundos en las etapas intermedias.</li>
+</ul>
+
+<h2>4.2. Infraestructura y Precomputación Desacoplada</h2>
+<p>
+Para entrenar sobre la totalidad del dataset (<strong>4.154 imágenes</strong>) sin incurrir en cuellos de botella de VRAM ni calcular repetidamente los mismos latentes durante las épocas, se diseñó una arquitectura de precomputación offline sobre una GPU <strong>NVIDIA A40 (48 GB VRAM)</strong> en RunPod.
+</p>
+
+<div class="card card-blue">
+  <strong>Hallazgo Crítico de Ingeniería: El Desbordamiento Numérico del VAE en FP16</strong><br>
+  En la codificación inicial a 1024×1024 con <code>torch.float16</code>, la función <code>vae.encode()</code> desbordó el rango dinámico de 16 bits en imágenes de alto contraste, propagando valores <code>NaN</code> en los tensores latentes y provocando pérdidas nulas en el entrenamiento.
+  <br><br>
+  <strong>Solución:</strong> Se refactorizó la totalidad del pipeline de codificación y entrenamiento hacia <strong><code>torch.bfloat16</code></strong> nativo de la arquitectura Ampere. <code>bfloat16</code> mantiene los mismos 8 bits de exponente que FP32, eliminando el desbordamiento por completo (0 NaNs verificados en las 4.154 imágenes).
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Componente Precomputado</th>
+      <th>Forma del Tensor (Batch 4.154)</th>
+      <th>Tipo de Dato</th>
+      <th>Tamaño en Disco</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Latentes VAE (z<sub>0</sub>)</strong></td>
+      <td><code>[4154, 4, 128, 128]</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td>~544 MB</td>
+    </tr>
+    <tr>
+      <td><strong>Embeddings CLIP Combinados</strong></td>
+      <td><code>[4154, 77, 2048]</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td>~1.30 GB</td>
+    </tr>
+    <tr>
+      <td><strong>Pooled Text Embeddings</strong></td>
+      <td><code>[4154, 1280]</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td>~10.6 MB</td>
+    </tr>
+    <tr>
+      <td><strong>Total Caché en Memoria</strong></td>
+      <td>Dataset completo indexado en RAM</td>
+      <td>—</td>
+      <td><strong>~1.85 GB</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>
+<strong>Impacto en el rendimiento:</strong> Al eliminar la codificación VAE y CLIP del bucle de entrenamiento, el consumo de cómputo por paso se redujo drásticamente, permitiendo que cada época completa de 4.154 imágenes se ejecutara en apenas <strong>30 minutos</strong> en lugar de las 4 horas que requeriría el pipeline tradicional sin caché.
+</p>
+
+<!-- ========================================== -->
+<!-- PÁGINA 6: TORNEO DE HIPERPARÁMETROS        -->
+<!-- ========================================== -->
+<div class="page-break"></div>
+
+<h1>5. Torneo Experimental de Hiperparámetros (3 Variantes)</h1>
+
+<h2>5.1. Definición de Variantes Arquitectónicas</h2>
+<p>
+Se diseñó un torneo para estudiar sistemáticamente el impacto del rango r y la inclusión de capas densas <em>Feed-Forward</em> (FFN) en la capacidad de transferencia de estilo de SDXL:
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Variante</th>
+      <th>Rank (r)</th>
+      <th>Alpha (α)</th>
+      <th>Capas Objetivo (UNet)</th>
+      <th>LR</th>
+      <th>Parámetros</th>
+      <th>Tamaño</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Variante A</strong></td>
+      <td>16</td>
+      <td>16</td>
+      <td>Cross-Attention (<code>to_k, to_q, to_v, to_out.0</code>)</td>
+      <td>1 × 10<sup>-4</sup></td>
+      <td>23.224.320</td>
+      <td>44,5 MB</td>
+    </tr>
+    <tr class="table-highlight">
+      <td><strong>Variante B (Recomendada)</strong></td>
+      <td>32</td>
+      <td>32</td>
+      <td>Cross-Attention (<code>to_k, to_q, to_v, to_out.0</code>)</td>
+      <td>1 × 10<sup>-4</sup></td>
+      <td>46.448.640</td>
+      <td>88,8 MB</td>
+    </tr>
+    <tr>
+      <td><strong>Variante C</strong></td>
+      <td>64</td>
+      <td>32</td>
+      <td>Cross-Attn + FFN (<code>ff.net.0.proj, ff.net.2</code>)</td>
+      <td>5 × 10<sup>-5</sup></td>
+      <td>167.319.040</td>
+      <td>319,6 MB</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>5.2. Telemetría y Métricas de Entrenamiento en Tiempo Real</h2>
+<p>
+Cada variante se entrenó durante 1.000 pasos de optimizador con tamaño de lote efectivo 8 (Batch 4 × Acumulación 2) en <code>bfloat16</code> sobre la A40:
+</p>
+
+<div class="grid-3col">
+  <div class="card">
+    <div class="badge-tag badge-blue">Variante A (r=16)</div>
+    <ul style="margin-top:4pt; font-size:8pt;">
+      <li><strong>Cadencia:</strong> 3,61 s / paso.</li>
+      <li><strong>Tiempo 1.000 pasos:</strong> 60,1 min.</li>
+      <li><strong>Pérdida final:</strong> 0,2606.</li>
+      <li><strong>VRAM usada:</strong> 8,46 GB.</li>
+      <li><strong>Checkpoints:</strong> 500 y 1.000 st.</li>
+    </ul>
+  </div>
+
+  <div class="card" style="border: 2px solid #0284c7;">
+    <div class="badge-tag badge-green">Variante B (r=32) ★</div>
+    <ul style="margin-top:4pt; font-size:8pt;">
+      <li><strong>Cadencia:</strong> 3,63 s / paso.</li>
+      <li><strong>Tiempo 1.000 pasos:</strong> 60,5 min.</li>
+      <li><strong>Pérdida final:</strong> 0,2468.</li>
+      <li><strong>VRAM usada:</strong> 8,93 GB.</li>
+      <li><strong>Checkpoints:</strong> 500 y 1.000 st.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="badge-tag badge-purple">Variante C (r=64 + FFN)</div>
+    <ul style="margin-top:4pt; font-size:8pt;">
+      <li><strong>Cadencia:</strong> 5,39 s / paso.</li>
+      <li><strong>Tiempo 1.000 pasos:</strong> 89,8 min.</li>
+      <li><strong>Pérdida final:</strong> 0,2162.</li>
+      <li><strong>VRAM usada:</strong> 11,15 GB.</li>
+      <li><strong>Checkpoints:</strong> 500 y 1.000 st.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="card card-emerald">
+  <strong>Análisis de Convergencia:</strong>
+  <ul>
+    <li>La <strong>Variante C (r=64 con FFN)</strong> alcanza la menor pérdida numérica (0,2162) gracias a su enorme capacidad paramétrica (167M de parámetros entrenables en las redes Feed-Forward). Sin embargo, el tiempo por paso se incrementó en un 49% (5,39s vs 3,61s).</li>
+    <li>La <strong>Variante B (r=32)</strong> demostró ser la configuración óptima: ofrece el doble de capacidad que r=16 sin apenas penalización computacional (+0,02s/paso), convergiendo con gran estabilidad en pérdida de 0,2468.</li>
+  </ul>
+</div>
+
+<!-- ========================================== -->
+<!-- PÁGINA 7: BENCHMARK Y MASTER GRID         -->
+<!-- ========================================== -->
+<div class="page-break"></div>
+
+<h1>6. Banco de Pruebas Benchmark y Matriz Maestra</h1>
+
+<h2>6.1. Definición del Benchmark Dual (10 Prompts)</h2>
+<p>
+Para una validación integral sin sesgos, se definieron 10 prompts benchmark divididos en dos categorías opuestas, evaluados en los 6 checkpoints generados (60 imágenes generadas con semilla fija 42 a 1024×1024):
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Categoría</th>
+      <th>Tema</th>
+      <th>Objetivo de Validación</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>01</strong></td>
+      <td>Histórica</td>
+      <td>Plancha Botánica de Pasiflora</td>
+      <td>Fidelidad científica, trazo de plumilla botánica y nervaduras.</td>
+    </tr>
+    <tr>
+      <td><strong>02</strong></td>
+      <td>Histórica</td>
+      <td>Retrato de Anciano Relojero</td>
+      <td>Expresión facial, arrugas, microrrelieves y engranajes finos.</td>
+    </tr>
+    <tr>
+      <td><strong>03</strong></td>
+      <td>Histórica</td>
+      <td>Catedral Gótica en Acantilado</td>
+      <td>Piedra medieval, mar embravecido y cielos dramáticos achurados.</td>
+    </tr>
+    <tr>
+      <td><strong>04</strong></td>
+      <td>Histórica</td>
+      <td>Locomotora de Vapor en Viaducto</td>
+      <td>Maquinaria pesada, humo denso y textura de sillería de piedra.</td>
+    </tr>
+    <tr>
+      <td><strong>05</strong></td>
+      <td>Histórica</td>
+      <td>Navío de Línea en Tempestad</td>
+      <td>Cordajes a plumilla, velamen desgarrado y estilización de olas.</td>
+    </tr>
+    <tr>
+      <td><strong>06</strong></td>
+      <td>Contemporánea</td>
+      <td>Coche Deportivo Rojo Nocturno</td>
+      <td>Transferencia extrema sobre reflejos de neón y fotorrealismo moderno.</td>
+    </tr>
+    <tr>
+      <td><strong>07</strong></td>
+      <td>Contemporánea</td>
+      <td>Joven en Cafetería Moderna</td>
+      <td>Retrato casual urbano convertido en grabado editorial íntimo.</td>
+    </tr>
+    <tr>
+      <td><strong>08</strong></td>
+      <td>Contemporánea</td>
+      <td>Golden Retriever en Colina Verde</td>
+      <td>Textura de pelaje canino y vegetación bajo técnica litográfica.</td>
+    </tr>
+    <tr>
+      <td><strong>09</strong></td>
+      <td>Contemporánea</td>
+      <td>Rascacielos Futuristas de Cristal</td>
+      <td>Líneas ortogonales y muros cortina modernos tratados como grabado.</td>
+    </tr>
+    <tr>
+      <td><strong>10</strong></td>
+      <td>Contemporánea</td>
+      <td>Astronauta Caminando en Marte</td>
+      <td>Concepto espacial anacrónico estilo grabado de Julio Verne / sci-fi.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>6.2. Matriz Maestra Global 10×4</h2>
+<div class="figure-box">
+  <img src="ASSETS_DIR_PLACEHOLDER/master_grid_10x4.jpg" style="max-height: 380px;" alt="Master Grid 10x4 SDXL">
+  <div class="figure-caption">Figura 3: Matriz Maestra Global 10×4 (2.198 × 5.200 px). Columnas: 1. SDXL Base | 2. LoRA r=16 (1.000st) | 3. LoRA r=32 (1.000st) | 4. LoRA r=64 (1.000st). Filas: Prompts 01 a 10.</div>
+</div>
+
+<!-- ========================================== -->
+<!-- PÁGINA 8: COMPARATIVAS LADO A LADO        -->
+<!-- ========================================== -->
+<div class="page-break"></div>
+
+<h1>7. Análisis Cualitativo por Categorías (Tiras 4-Col)</h1>
+
+<h2>7.1. Categoría Histórica: Retrato de Oficio (Prompt 02 - Relojero)</h2>
+<div class="figure-box">
+  <img src="ASSETS_DIR_PLACEHOLDER/comparativa_4col_02_relojero.jpg" alt="Tira Relojero">
+  <div class="figure-caption">Figura 4: Tira comparativa [Base | r=16 | r=32 | r=64] para el Relojero del Siglo XIX.</div>
+</div>
+<ul>
+  <li><strong>SDXL Base:</strong> Produce una pintura al óleo digitalizada de aspecto contemporáneo.</li>
+  <li><strong>LoRA r=16:</strong> Introduce entintado suave y reduce la saturación hacia tonos sepia.</li>
+  <li><strong>LoRA r=32 (Recomendado):</strong> Alcanza el equilibrio sublime. El achurado en las sombras del rostro y los reflejos metálicos del monóculo evocan una ilustración litográfica de enciclopedia decimonónica con absoluta nitidez.</li>
+  <li><strong>LoRA r=64:</strong> Agrega un tramado muy denso y oscuro, otorgando un aspecto dramático propio de xilografía en madera.</li>
+</ul>
+
+<h2>7.2. Categoría Botánica: Plancha Científica (Prompt 01 - Pasiflora)</h2>
+<div class="figure-box">
+  <img src="ASSETS_DIR_PLACEHOLDER/comparativa_4col_01_botanica.jpg" alt="Tira Botanica">
+  <div class="figure-caption">Figura 5: Tira comparativa para lámina botánica de pasiflora (raíces, tallos y pistilos).</div>
+</div>
+<p>
+El modelo base genera una flor viva sobre fondo de estudio fotográfico. Las variantes LoRA reproducen con exactitud el estilo de grabado botánico científico en planchas de cobre, separando las piezas florales sobre fondo de papel apergaminado neutro.
+</p>
+
+<h2>7.3. Categoría Contemporánea: Automóvil y Neón (Prompt 06 - Coche)</h2>
+<div class="figure-box">
+  <img src="ASSETS_DIR_PLACEHOLDER/comparativa_4col_06_coche_deportivo.jpg" alt="Tira Coche Deportivo">
+  <div class="figure-caption">Figura 6: Transferencia de estilo extrema: Coche deportivo moderno bajo lluvia y luces de neón.</div>
+</div>
+<p>
+El ensayo más exigente: transferir un estilo de 1850 sobre un objeto del siglo XXI con reflejos de asfalto mojado. Mientras el modelo base genera una foto digital hiperrealista, <strong>el LoRA r=32</strong> reinventa la carrocería moderna como una pieza de ingeniería victoriana dibujada a plumilla y tinta china, conservando la silueta aerodinámica.
+</p>
+
+<!-- ========================================== -->
+<!-- PÁGINA 9: PROGRESIÓN TEMPORAL             -->
+<!-- ========================================== -->
+<div class="page-break"></div>
+
+<h1>8. Progresión Temporal por Épocas (Evolución de Checkpoints)</h1>
+
+<h2>8.1. Evolución del Aprendizaje (Base vs. 500 Pasos vs. 1.000 Pasos)</h2>
+<p>
+Para verificar el ritmo de asimilación del estilo durante el entrenamiento, se comparó la Variante B (r=32) en sus puntos de control temporales:
+</p>
+
+<div class="figure-box">
+  <img src="ASSETS_DIR_PLACEHOLDER/progresion_epocas_02_relojero.jpg" alt="Progresion Epocas Relojero">
+  <div class="figure-caption">Figura 7: Progresión temporal en Variante B: 1. SDXL Base | 2. Paso 500 (1 época completa) | 3. Paso 1.000 (2 épocas completas).</div>
+</div>
+
+<div class="card card-blue">
+  <strong>Análisis de la Maduración del Estilo:</strong>
+  <ul>
+    <li><strong>Paso 0 (Base):</strong> Fotorrealismo / render digital con iluminación suave y volumen policromático.</li>
+    <li><strong>Paso 500 (1 Época):</strong> El modelo desatura los tonos cálidos, aplana la iluminación volumétrica y comienza a estructurar los contornos mediante líneas entintadas. El fondo pasa a un tono pergamino.</li>
+    <li><strong>Paso 1.000 (2 Épocas):</strong> Maduración completa del <em>cross-hatching</em>. Las sombras en los pliegues de la camisa y las arrugas de la frente ya no son gradientes difusos, sino tramas densas de líneas paralelas y cruzadas con textura auténtica de grabado calcográfico.</li>
+  </ul>
+</div>
+
+<h2>8.2. Transferencia a Ciencia Ficción Anacrónica (Prompt 10 - Astronauta)</h2>
+<div class="figure-box">
+  <img src="ASSETS_DIR_PLACEHOLDER/comparativa_4col_10_astronauta_marte.jpg" alt="Tira Astronauta">
+  <div class="figure-caption">Figura 8: Astronauta explorando la superficie rocosa de Marte con la Tierra de fondo.</div>
+</div>
+<p>
+El contraste visual es impresionante: la escena espacial se convierte en un grabado que parece sacado de una primera edición de <em>"De la Tierra a la Luna"</em> de Julio Verne (1865), con el traje espacial entintado con escafandra y el regolito marciano modelado mediante achurado fino.
+</p>
+
+<!-- ========================================== -->
+<!-- PÁGINA 10: HUGGING FACE & FINANZAS        -->
+<!-- ========================================== -->
+<div class="page-break"></div>
+
+<h1>9. Publicación en Hugging Face Hub y Gestión Cloud</h1>
+
+<h2>9.1. Ecosistema Publicado en Hugging Face Hub</h2>
+<p>
+Todos los modelos entrenados, pesos en formato <code>safetensors</code>, puntos de control, Model Cards y galerías se encuentran disponibles públicamente:
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Repositorio</th>
+      <th>Modelo Base</th>
+      <th>Contenido</th>
+      <th>Enlace Directo</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Fase Oficial</strong></td>
+      <td>SD v1.4</td>
+      <td>Pesos LoRA (r=8), Model Card oficial y ejemplo comparativo.</td>
+      <td><a href="https://huggingface.co/Twinber/sd-v1-4-oldbook-illustrations-lora">Twinber/sd-v1-4-oldbook-illustrations-lora</a></td>
+    </tr>
+    <tr class="table-highlight">
+      <td><strong>Fase Avanzada</strong></td>
+      <td>SDXL 1.0</td>
+      <td>3 variantes LoRA finales, 3 checkpoints intermedios, Master Grid y 10 comparativas.</td>
+      <td><a href="https://huggingface.co/Twinber/sdxl-oldbook-illustrations-lora">Twinber/sdxl-oldbook-illustrations-lora</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>9.2. Gobernanza de Costes y Disciplina Operativa en RunPod</h2>
+<p>
+La gestión del cómputo en la nube se gobernó bajo estrictos principios de eficiencia financiera e ingeniería:
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Concepto de Cómputo</th>
+      <th>Recurso / GPU</th>
+      <th>Tiempo / Cadencia</th>
+      <th>Coste / Hora</th>
+      <th>Subtotal</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Precomputación VAE y CLIP</strong></td>
+      <td>NVIDIA A40 48GB (Secure Cloud)</td>
+      <td>25 min (4.154 imágenes)</td>
+      <td>0,604 $/h</td>
+      <td>0,25 $</td>
+    </tr>
+    <tr>
+      <td><strong>Entrenamiento Variante A (r=16)</strong></td>
+      <td>NVIDIA A40 48GB (Secure Cloud)</td>
+      <td>60 min (3,61 s/paso)</td>
+      <td>0,604 $/h</td>
+      <td>0,60 $</td>
+    </tr>
+    <tr>
+      <td><strong>Entrenamiento Variante B (r=32)</strong></td>
+      <td>NVIDIA A40 48GB (Secure Cloud)</td>
+      <td>60 min (3,63 s/paso)</td>
+      <td>0,604 $/h</td>
+      <td>0,60 $</td>
+    </tr>
+    <tr>
+      <td><strong>Entrenamiento Variante C (r=64)</strong></td>
+      <td>NVIDIA A40 48GB (Secure Cloud)</td>
+      <td>90 min (5,39 s/paso)</td>
+      <td>0,604 $/h</td>
+      <td>0,91 $</td>
+    </tr>
+    <tr>
+      <td><strong>Inferencia (60 img) + Matrices</strong></td>
+      <td>NVIDIA A40 48GB (Secure Cloud)</td>
+      <td>10 min (6,9 s/imagen)</td>
+      <td>0,604 $/h</td>
+      <td>0,10 $</td>
+    </tr>
+    <tr>
+      <td><strong>Espera y Validación Personal</strong></td>
+      <td>GPU en reposo (autorización Twinber)</td>
+      <td>40 min</td>
+      <td>0,604 $/h</td>
+      <td>0,40 $</td>
+    </tr>
+    <tr class="table-highlight">
+      <td><strong>TOTAL EXPERIMENTO COMPLETO</strong></td>
+      <td><strong>Sesión Integral RunPod</strong></td>
+      <td><strong>~4h 45m</strong></td>
+      <td>—</td>
+      <td><strong>2,86 $ USD</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="card card-emerald">
+  <strong>Verificación de Apagado y Saldo Final:</strong>
+  <ul>
+    <li><strong>Saldo inicial disponible:</strong> 11,85 $ USD.</li>
+    <li><strong>Saldo final remanente:</strong> <strong>8,73 $ USD</strong> (gasto real: 3,12 $ con almacenamiento).</li>
+    <li><strong>Estado final del Pod:</strong> Detenido y posteriormente <strong>eliminado por completo</strong> (<code>deleted: true</code>, 0 pods activos, coste horario actual: <strong>0,000 $/h</strong>).</li>
+  </ul>
+</div>
+
+<!-- ========================================== -->
+<!-- PÁGINA 11: GUÍA DE FICHEROS Y CONCLUSIONES -->
+<!-- ========================================== -->
+<div class="page-break"></div>
+
+<h1>10. Guía de Ficheros Entregados y Conclusiones</h1>
+
+<h2>10.1. Mapeo de la Estructura del Entregable</h2>
+<p>
+El paquete entregable se encuentra organizado en una estructura limpia y desacoplada:
+</p>
+
+<pre><code>11-Generacion-Imagen/
+├── entrega_finetuning_lora_oldbook.ipynb  # Cuaderno de entrega oficial del Máster (SD 1.4)
+├── huggingface_repo_url.txt               # Enlace al repositorio oficial en Hugging Face
+├── imagen_antes_finetuning.png            # Imagen antes del finetuning (semilla 42)
+├── imagen_despues_finetuning.png          # Imagen después del finetuning (semilla 42)
+├── comparativa_antes_despues.png          # Panel comparativo lado a lado oficial
+├── comparativa_hombre_perro.png           # Panel de generalización escena cotidiana
+├── Memoria_Presentacion_Proyecto.pdf      # Este documento técnico completo
+├── bonus/                                 # Entregables adicionales oficiales
+│   ├── probador_interactivo_lora_colab.ipynb  # Cuaderno Colab con interfaz interactiva
+│   ├── app.py                             # Aplicación local en Streamlit
+│   └── README.md                          # Guía de despliegue del bonus
+└── extra/                                 # PROYECTO AVANZADO DE INVESTIGACIÓN (SDXL)
+    ├── README.md                          # Memoria técnica del torneo de hiperparámetros
+    ├── probador_sdxl_loras_colab.ipynb    # Probador interactivo en Colab para los 3 LoRAs SDXL
+    ├── base_*.png (10 imágenes)           # Las 10 imágenes base de SDXL (sin LoRA, 1024px)
+    ├── scripts/
+    │   ├── run_full_experiment.py         # Pipeline maestro de entrenamiento e inferencia
+    │   └── setup_pod.sh                   # Script de provisionamiento del pod en RunPod
+    ├── comparisons/
+    │   ├── master_grid_10x4.png           # Matriz Maestra global completa (10 prompts x 4 col)
+    │   ├── comparativa_4col_*.png (10)    # Tiras 4 columnas a 4096px por cada prompt
+    │   └── progresion_epocas_*.png (10)   # Tiras de evolución por épocas (Base vs 500 vs 1000)
+    └── models/
+        ├── sdxl_oldbook_lora_rank16_final.safetensors  # Pesos finales Variante A (45 MB)
+        ├── sdxl_oldbook_lora_rank32_final.safetensors  # Pesos finales Variante B (89 MB)
+        └── sdxl_oldbook_lora_rank64_final.safetensors  # Pesos finales Variante C (320 MB)</code></pre>
+
+<h2>10.2. Conclusiones y Aprendizajes Clave de Ingeniería</h2>
+<ol>
+  <li><strong>El valor de la normalización geométrica:</strong> En imágenes históricas, recortar sin deformar (<em>crop</em> tras escalado proporcional) es imprescindible para no destruir la naturaleza del achurado.</li>
+  <li><strong>Precisión numérica y estabilidad (bfloat16):</strong> SDXL exige <code>bfloat16</code> en hardware moderno para prevenir el desbordamiento numérico del VAE latente.</li>
+  <li><strong>El "punto dulce" del rango LoRA (r=32):</strong> Doblar el rango de 16 a 32 en las capas de Cross-Attention aporta una riqueza gráfica visiblemente superior sin apenas sobrecoste de entrenamiento (+0,02s/paso). Incluir capas FFN (r=64) maximiza la densidad de tinta pero triplica el tamaño del archivo y añade un 49% de tiempo de cómputo.</li>
+  <li><strong>Precomputación desacoplada:</strong> Cachear latentes y embeddings CLIP reduce el tiempo de entrenamiento en más de un 80%, haciendo viable entrenar miles de muestras en GPUs de alquiler por una fracción del coste habitual.</li>
+</ol>
+
+<div class="card card-blue" style="text-align: center; margin-top: 15pt;">
+  <strong>Proyecto completado y validado en su totalidad</strong><br>
+  Daniel Aguilera González (Twinber) · Sevilla / Madrid · Octubre 2026
+</div>
+
+</body>
+</html>
+"""
+
+html_final = html_template.replace("ASSETS_DIR_PLACEHOLDER", str(ASSETS_DIR))
+
+print("Escribiendo HTML...")
+html_file = BASE_DIR / "extra/scripts/documento_presentacion.html"
+with open(html_file, "w", encoding="utf-8") as f:
+    f.write(html_final)
+
+print(f"Renderizando PDF con WeasyPrint en: {PDF_OUT}...")
+weasyprint.HTML(filename=str(html_file)).write_pdf(str(PDF_OUT))
+
+pdf_size_mb = PDF_OUT.stat().st_size / (1024 * 1024)
+print(f"¡PDF generado con ÉXITO! Tamaño: {pdf_size_mb:.2f} MB")

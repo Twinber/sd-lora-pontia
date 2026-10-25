@@ -1,0 +1,19 @@
+# Pesos de modelos grandes (alojados en Hugging Face Hub)
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.ckpt
+
+# Zips de gran tamaño (>50MB)
+entrega_finetuning_lora_oldbook.zip
+entrega_finetuning_lora_oldbook_docs_y_comparativas.zip
+
+# IDEs y temporales
+.idea/
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+.DS_Store
+*.tmp

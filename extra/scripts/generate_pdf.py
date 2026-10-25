@@ -106,18 +106,19 @@ html_template = """<!DOCTYPE html>
 
   /* PORTADA */
   .cover-container {
-    height: 100vh;
-    padding: 35mm 25mm 25mm 25mm;
+    box-sizing: border-box;
+    width: 210mm;
+    height: 297mm;
+    padding: 28mm 20mm 20mm 20mm;
     background: linear-gradient(135deg, #090d16 0%, #0f172a 60%, #0369a1 100%);
     color: #ffffff;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    position: relative;
   }
 
   .cover-header {
     border-left: 4px solid #38bdf8;
     padding-left: 15px;
+    margin-bottom: 22px;
   }
 
   .cover-badge {
@@ -127,15 +128,15 @@ html_template = """<!DOCTYPE html>
     border: 1px solid rgba(56, 189, 248, 0.4);
     padding: 4px 12px;
     border-radius: 20px;
-    font-size: 9pt;
+    font-size: 8.5pt;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1px;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
   }
 
   .cover-title {
-    font-size: 26pt;
+    font-size: 24pt;
     line-height: 1.15;
     color: #ffffff;
     font-weight: 800;
@@ -143,41 +144,100 @@ html_template = """<!DOCTYPE html>
   }
 
   .cover-subtitle {
-    font-size: 14pt;
+    font-size: 12.5pt;
     color: #94a3b8;
     font-weight: 400;
     line-height: 1.4;
   }
 
-  .cover-meta-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin: 40px 0;
-    background: rgba(15, 23, 42, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+  .cover-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 8px;
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 10px;
-    padding: 20px;
+    padding: 8px 12px;
+    margin: 0 0 15px 0;
   }
 
-  .meta-item label {
+  .cover-table tr,
+  .cover-table tr:nth-child(even),
+  .cover-table tr:nth-child(odd) {
+    background: transparent !important;
+  }
+
+  .cover-table td {
+    padding: 5px 8px;
+    border: none;
+    background: transparent !important;
+    vertical-align: top;
+  }
+
+  .meta-label {
     display: block;
-    font-size: 8pt;
+    font-size: 7.5pt;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.6px;
     color: #38bdf8;
     font-weight: 600;
+    margin-bottom: 2px;
   }
 
-  .meta-item span {
-    font-size: 10pt;
+  .meta-value {
+    display: block;
+    font-size: 9.5pt;
     color: #f8fafc;
     font-weight: 500;
   }
 
+  .meta-value a {
+    color: #38bdf8;
+    text-decoration: none;
+  }
+
+  .cover-repo-box {
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.45);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+  }
+
+  .repo-box-label {
+    font-size: 8pt;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #7dd3fc;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .repo-box-url {
+    font-size: 11.5pt;
+    font-weight: 700;
+  }
+
+  .repo-box-url a {
+    color: #38bdf8;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .repo-box-desc {
+    font-size: 8pt;
+    color: #cbd5e1;
+    margin-top: 4px;
+    line-height: 1.35;
+  }
+
   .cover-footer {
+    position: absolute;
+    bottom: 20mm;
+    left: 20mm;
+    right: 20mm;
     border-top: 1px solid rgba(255, 255, 255, 0.15);
-    padding-top: 15px;
+    padding-top: 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -342,36 +402,52 @@ html_template = """<!DOCTYPE html>
     </div>
   </div>
 
-  <div class="cover-meta-grid">
-    <div class="meta-item">
-      <label>Autor / Estudiante</label>
-      <span>Daniel Aguilera González (Twinber)</span>
+  <table class="cover-table">
+    <tr>
+      <td style="width: 50%;">
+        <span class="meta-label">Autor / Estudiante</span>
+        <span class="meta-value">Daniel Aguilera González (Twinber)</span>
+      </td>
+      <td style="width: 50%;">
+        <span class="meta-label">Programa Académico</span>
+        <span class="meta-value">Máster en IA y Deep Learning · PontIA</span>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <span class="meta-label">Módulo Académico</span>
+        <span class="meta-value">Módulo 11: Modelos de Generación de Imagen</span>
+      </td>
+      <td>
+        <span class="meta-label">Fecha de Finalización</span>
+        <span class="meta-value">25 de Octubre de 2026</span>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <span class="meta-label">Modelo Oficial SD 1.4 (Hugging Face)</span>
+        <span class="meta-value"><a href="https://huggingface.co/Twinber/sd-v1-4-oldbook-illustrations-lora">Twinber/sd-v1-4-oldbook-illustrations-lora</a></span>
+      </td>
+      <td>
+        <span class="meta-label">Modelo SDXL Avanzado (Hugging Face)</span>
+        <span class="meta-value"><a href="https://huggingface.co/Twinber/sdxl-oldbook-illustrations-lora">Twinber/sdxl-oldbook-illustrations-lora</a></span>
+      </td>
+    </tr>
+  </table>
+
+  <div class="cover-repo-box">
+    <div class="repo-box-label">Repositorio Oficial en GitHub (Código, Cuadernos y Memoria)</div>
+    <div class="repo-box-url">
+      <a href="https://github.com/Twinber/sd-lora-pontia">https://github.com/Twinber/sd-lora-pontia</a>
     </div>
-    <div class="meta-item">
-      <label>Programa Académico</label>
-      <span>Máster en IA y Deep Learning · PontIA</span>
-    </div>
-    <div class="meta-item">
-      <label>Módulo</label>
-      <span>Módulo 11: Modelos de Generación de Imagen</span>
-    </div>
-    <div class="meta-item">
-      <label>Fecha de Finalización</label>
-      <span>25 de Octubre de 2026</span>
-    </div>
-    <div class="meta-item">
-      <label>Modelo Oficial (HF Hub)</label>
-      <span>Twinber/sd-v1-4-oldbook-illustrations-lora</span>
-    </div>
-    <div class="meta-item">
-      <label>Modelo SDXL Avanzado (HF Hub)</label>
-      <span>Twinber/sdxl-oldbook-illustrations-lora</span>
+    <div class="repo-box-desc">
+      Repositorio central público con la implementación oficial completa, notebooks interactivos reproducibles, el torneo experimental SDXL 1.0 (1024×1024) y documentación técnica.
     </div>
   </div>
 
   <div class="cover-footer">
     <div>PontIA Institute of Artificial Intelligence · 2026</div>
-    <div>Infraestructura: Tesla T4 (Colab) &amp; NVIDIA A40 48GB (RunPod)</div>
+    <div>Infraestructura: Tesla T4 &amp; NVIDIA A40 48GB · Enlaces Activos a GitHub y HF</div>
   </div>
 </div>
 
@@ -888,31 +964,37 @@ El contraste visual es impresionante: la escena espacial se convierte en un grab
 
 <h1>9. Publicación en Hugging Face Hub y Gestión Cloud</h1>
 
-<h2>9.1. Ecosistema Publicado en Hugging Face Hub</h2>
+<h2>9.1. Repositorio de Código y Ecosistema de Modelos</h2>
 <p>
-Todos los modelos entrenados, pesos en formato <code>safetensors</code>, puntos de control, Model Cards y galerías se encuentran disponibles públicamente:
+El código fuente, los cuadernos reproducibles, los adaptadores LoRA (<code>safetensors</code>) y los puntos de control intermedios están publicados y accesibles públicamente:
 </p>
 
 <table>
   <thead>
     <tr>
-      <th>Repositorio</th>
-      <th>Modelo Base</th>
-      <th>Contenido</th>
+      <th>Recurso</th>
+      <th>Plataforma</th>
+      <th>Contenido y Alcance</th>
       <th>Enlace Directo</th>
     </tr>
   </thead>
   <tbody>
+    <tr class="table-highlight">
+      <td><strong>Código y Memoria</strong></td>
+      <td>GitHub</td>
+      <td>Pipeline completo, cuadernos interactivos, scripts y documentación.</td>
+      <td><a href="https://github.com/Twinber/sd-lora-pontia">Twinber/sd-lora-pontia</a></td>
+    </tr>
     <tr>
       <td><strong>Fase Oficial</strong></td>
-      <td>SD v1.4</td>
-      <td>Pesos LoRA (r=8), Model Card oficial y ejemplo comparativo.</td>
+      <td>Hugging Face</td>
+      <td>Pesos LoRA SD 1.4 (r=8), Model Card oficial y ejemplo comparativo.</td>
       <td><a href="https://huggingface.co/Twinber/sd-v1-4-oldbook-illustrations-lora">Twinber/sd-v1-4-oldbook-illustrations-lora</a></td>
     </tr>
-    <tr class="table-highlight">
+    <tr>
       <td><strong>Fase Avanzada</strong></td>
-      <td>SDXL 1.0</td>
-      <td>3 variantes LoRA finales, 3 checkpoints intermedios, Master Grid y 10 comparativas.</td>
+      <td>Hugging Face</td>
+      <td>3 variantes LoRA SDXL, 3 checkpoints intermedios, Master Grid y tiras 4K.</td>
       <td><a href="https://huggingface.co/Twinber/sdxl-oldbook-illustrations-lora">Twinber/sdxl-oldbook-illustrations-lora</a></td>
     </tr>
   </tbody>
@@ -1004,7 +1086,7 @@ La gestión del cómputo en la nube se gobernó bajo estrictos principios de efi
 
 <h2>10.1. Mapeo de la Estructura del Entregable</h2>
 <p>
-El paquete entregable se encuentra organizado en una estructura limpia y desacoplada:
+El paquete entregable y todos los componentes del proyecto se encuentran alojados y sincronizados en el repositorio público de GitHub <a href="https://github.com/Twinber/sd-lora-pontia"><strong>Twinber/sd-lora-pontia</strong></a>, organizados en la siguiente estructura:
 </p>
 
 <pre><code>11-Generacion-Imagen/
@@ -1014,7 +1096,7 @@ El paquete entregable se encuentra organizado en una estructura limpia y desacop
 ├── imagen_despues_finetuning.png          # Imagen después del finetuning (semilla 42)
 ├── comparativa_antes_despues.png          # Panel comparativo lado a lado oficial
 ├── comparativa_hombre_perro.png           # Panel de generalización escena cotidiana
-├── Memoria_Presentacion_Proyecto.pdf      # Este documento técnico completo
+├── Memoria_Presentacion_Proyecto_LoRA_OldBook.pdf  # Este documento técnico completo interactivo
 ├── bonus/                                 # Entregables adicionales oficiales
 │   ├── probador_interactivo_lora_colab.ipynb  # Cuaderno Colab con interfaz interactiva
 │   ├── app.py                             # Aplicación local en Streamlit

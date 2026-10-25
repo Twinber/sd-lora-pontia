@@ -26,25 +26,25 @@ Para evaluar con rigor científico el impacto exclusivo de los pesos LoRA, se ha
 ### Comparativa 1: Escena Botánica Histórica
 > **Prompt:** *"an antique illustration of a botanic garden with exotic flowers and trees"* (`seed = 42`)
 
-![Comparativa Antes vs Después](comparativa_antes_despues.png)
+![Comparativa Antes vs Después](renders/comparativa_antes_despues.png)
 
 ### Comparativa 2: Escena Genérica Cotidiana (Hombre con perro junto a un lago)
 Para demostrar la capacidad de generalización del estilo de grabado sobre conceptos comunes no explícitamente históricos:
 > **Prompt:** *"a man walking his dog by the shores of a lake, tranquil landscape"* (`seed = 42`)
 
-![Comparativa Hombre y Perro](comparativa_hombre_perro.png)
+![Comparativa Hombre y Perro](renders/comparativa_hombre_perro.png)
 
 ### Comparativa 3: Anciano pescando en barca en mitad de un lago (Sesgo fotográfico vs. Cuento de época)
 Demuestra de forma rotunda cómo el modelo base sesga hacia la fotografía moderna (gafas de sol contemporáneas, lancha actual), mientras que el LoRA impone la estética de un libro de relatos o litografía clásica con personajes ataviados con ropas tradicionales:
 > **Prompt:** *"Anciano pescando en una barca en mitad de un lago"* (`seed = 303`, 20 pasos)
 
-![Anciano Pescando en Barca](anciano-pescando-barca.png)
+![Anciano Pescando en Barca](renders/anciano-pescando-barca.png)
 
 ### Comparativa 4: Mujer bailando sobre una mesa (Foto de estudio moderna vs. Ilustración Art Nouveau)
 El modelo base genera una bailarina en un estudio de danza contemporáneo (mallas negras, camiseta moderna, suelo de parquet). El modelo LoRA transforma la escena en una estampa victoriana con vestido de época, corset, faldón y vidriera emplomada:
 > **Prompt:** *"Mujer bailando sobre una mesa"* (`seed = 101`, 20 pasos)
 
-![Mujer Bailando](mujer-bailando.png)
+![Mujer Bailando](renders/mujer-bailando.png)
 
 ### Análisis de los resultados:
 * **Modelo Base (SD v1.4):** Tiende por defecto hacia la fotografía de stock contemporánea (gafas de sol, ropa deportiva, iluminación de estudio fotográfico actual) y acabados digitales planos.
@@ -129,33 +129,55 @@ image.save("faro_antiguo.png")
 
 ---
 
-## 6. Estructura de Entregables, Cuadernos y Bonus
+## 6. Estructura Organizada del Proyecto
+
+El repositorio está estructurado de forma modular y limpia, separando la entrega oficial, el material de clase, los resultados visuales y la investigación avanzada:
 
 ```
 11-Generacion-Imagen/
-├── Memoria_Presentacion_Proyecto_LoRA_OldBook.pdf # Memoria técnica y presentación completa (14 páginas A4 con gráficos de alta resolución)
-├── entrega_finetuning_lora_oldbook.ipynb   # Cuaderno Jupyter maestro de fine-tuning (entrenamiento completo y reproducible)
+├── Memoria_Presentacion_Proyecto_LoRA_OldBook.pdf # Memoria técnica oficial en PDF (14 páginas, interactiva con enlaces)
+├── entrega_finetuning_lora_oldbook.ipynb   # Cuaderno Jupyter maestro oficial de fine-tuning (reproducible)
 ├── huggingface_repo_url.txt                 # Enlace oficial al modelo publicado en Hugging Face Hub
-├── imagen_antes_finetuning.png             # Inferencia del modelo base (botánico, seed 42)
-├── imagen_despues_finetuning.png           # Inferencia del modelo tras LoRA (botánico, seed 42)
-├── comparativa_antes_despues.png           # Panel comparativo botánico lado a lado
-├── comparativa_hombre_perro.png            # Panel comparativo genérico (hombre y perro en lago)
-├── anciano-pescando-barca.png              # Comparativa generada en Colab: Anciano pescando (seed 303)
-├── mujer-bailando.png                      # Comparativa generada en Colab: Mujer bailando (seed 101)
-├── README.md                               # Memoria técnica explicativa del proyecto
-├── bonus/                                  # Carpeta bonus con herramientas interactivas complementarias
-│   ├── probador_interactivo_lora_colab.ipynb # Cuaderno para pruebas ágiles en Google Colab con GPU
-│   ├── app.py                              # Aplicación Streamlit interactiva para inferencia en tiempo real en local
-│   └── README.md                           # Documentación de las herramientas del directorio bonus
+├── README.md                               # Documentación general y guía técnica
+├── .gitignore
+│
+├── renders/                                # Paneles e imágenes generadas con Stable Diffusion v1.4 + LoRA
+│   ├── comparativa_antes_despues.png       # Comparativa botánica lado a lado (seed 42)
+│   ├── comparativa_hombre_perro.png        # Generalización: hombre y perro en el lago (seed 42)
+│   ├── anciano-pescando-barca.png          # Comparativa: anciano pescando en barca (seed 303)
+│   ├── mujer-bailando.png                  # Comparativa: mujer bailando (seed 101)
+│   ├── imagen_antes_finetuning.png         # Inferencia previa base
+│   └── imagen_despues_finetuning.png       # Inferencia final con LoRA
+│
+├── bonus/                                  # Herramientas interactivas adicionales oficiales
+│   ├── probador_interactivo_lora_colab.ipynb # Cuaderno Colab para inferencia interactiva con GPU
+│   ├── app.py                              # Aplicación local en Streamlit
+│   └── README.md                           # Guía de uso del bonus
+│
 ├── extra/                                  # Proyecto Avanzado de Investigación: SDXL 1024x1024 en RunPod (A40 48GB)
 │   ├── README.md                           # Memoria técnica completa del torneo de hiperparámetros
-│   ├── probador_sdxl_loras_colab.ipynb     # Cuaderno Colab con widgets interactivos para los 3 LoRAs SDXL
+│   ├── probador_sdxl_loras_colab.ipynb     # Cuaderno Colab interactivo para los 3 LoRAs SDXL
 │   ├── base_*.png (10)                     # Las 10 imágenes base de SDXL 1024px
-│   ├── scripts/                            # Pipeline maestro de entrenamiento e inferencia y generador de PDF
-│   ├── comparisons/                        # Master Grid 10x4 y las 20 tiras comparativas a resolución 4K
+│   ├── scripts/                            # Pipeline maestro de entrenamiento (run_full_experiment.py, generate_pdf.py)
+│   ├── comparisons/                        # Master Grid 10x4 y 20 tiras comparativas en resolución 4K
 │   └── models/                             # Pesos finales .safetensors (r=16, r=32 y r=64)
-└── entrega_finetuning_lora_oldbook.zip     # Paquete comprimido final que incluye entrega oficial, extra y PDF
-
+│
+├── material_clase/                         # Material docente y apuntes teóricos de PontIA
+│   ├── 1.uso_modelos_opensource.ipynb      # Notebook de introducción a modelos open-source
+│   ├── 1.finetuning_diffusion_model.ipynb  # Notebook base de difusión
+│   ├── 1-2.modelo_difusion_from_scratch.ipynb # Difusión implementada desde cero
+│   ├── 2.finetuning_stable_diffusion_lora.ipynb # Notebook de clase de LoRA con Pokémon
+│   ├── 1-enunciado_entrega_modelos_generacion_imagen.pdf # Enunciado de la práctica
+│   └── *.pdf                               # Diapositivas y apuntes de clases en vivo
+│
+├── models/                                 # Metadatos del modelo publicado en Hugging Face
+│   ├── README.md
+│   └── HF_README.md
+│
+└── dist/                                   # Paquetes comprimidos (.zip) preparados para entrega
+    ├── entrega_finetuning_lora_oldbook_base.zip              # Entrega base mínima
+    ├── entrega_finetuning_lora_oldbook_docs_y_comparativas.zip # Entrega completa con comparativas 4K y PDF
+    └── entrega_finetuning_lora_oldbook.zip                   # Paquete íntegro con modelos locales
 ```
 
 ---

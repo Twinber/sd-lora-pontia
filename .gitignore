@@ -5,7 +5,10 @@
 *.pth
 *.ckpt
 
-# Zips de gran tamaño (>50MB)
+# Zips de gran tamaño (>50MB) y staging de entrega
+dist/entrega_finetuning_lora_oldbook.zip
+dist/entrega_finetuning_lora_oldbook_docs_y_comparativas.zip
+dist/entrega_finetuning_lora_oldbook/
 entrega_finetuning_lora_oldbook.zip
 entrega_finetuning_lora_oldbook_docs_y_comparativas.zip
 

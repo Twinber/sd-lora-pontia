@@ -1090,32 +1090,21 @@ El paquete entregable y todos los componentes del proyecto se encuentran alojado
 </p>
 
 <pre><code>11-Generacion-Imagen/
-├── entrega_finetuning_lora_oldbook.ipynb  # Cuaderno de entrega oficial del Máster (SD 1.4)
-├── huggingface_repo_url.txt               # Enlace al repositorio oficial en Hugging Face
-├── imagen_antes_finetuning.png            # Imagen antes del finetuning (semilla 42)
-├── imagen_despues_finetuning.png          # Imagen después del finetuning (semilla 42)
-├── comparativa_antes_despues.png          # Panel comparativo lado a lado oficial
-├── comparativa_hombre_perro.png           # Panel de generalización escena cotidiana
-├── Memoria_Presentacion_Proyecto_LoRA_OldBook.pdf  # Este documento técnico completo interactivo
-├── bonus/                                 # Entregables adicionales oficiales
-│   ├── probador_interactivo_lora_colab.ipynb  # Cuaderno Colab con interfaz interactiva
-│   ├── app.py                             # Aplicación local en Streamlit
-│   └── README.md                          # Guía de despliegue del bonus
-└── extra/                                 # PROYECTO AVANZADO DE INVESTIGACIÓN (SDXL)
-    ├── README.md                          # Memoria técnica del torneo de hiperparámetros
-    ├── probador_sdxl_loras_colab.ipynb    # Probador interactivo en Colab para los 3 LoRAs SDXL
-    ├── base_*.png (10 imágenes)           # Las 10 imágenes base de SDXL (sin LoRA, 1024px)
-    ├── scripts/
-    │   ├── run_full_experiment.py         # Pipeline maestro de entrenamiento e inferencia
-    │   └── setup_pod.sh                   # Script de provisionamiento del pod en RunPod
-    ├── comparisons/
-    │   ├── master_grid_10x4.png           # Matriz Maestra global completa (10 prompts x 4 col)
-    │   ├── comparativa_4col_*.png (10)    # Tiras 4 columnas a 4096px por cada prompt
-    │   └── progresion_epocas_*.png (10)   # Tiras de evolución por épocas (Base vs 500 vs 1000)
-    └── models/
-        ├── sdxl_oldbook_lora_rank16_final.safetensors  # Pesos finales Variante A (45 MB)
-        ├── sdxl_oldbook_lora_rank32_final.safetensors  # Pesos finales Variante B (89 MB)
-        └── sdxl_oldbook_lora_rank64_final.safetensors  # Pesos finales Variante C (320 MB)</code></pre>
+├── Memoria_Presentacion_Proyecto_LoRA_OldBook.pdf  # Este documento técnico interactivo
+├── entrega_finetuning_lora_oldbook.ipynb  # Cuaderno Jupyter maestro oficial (SD 1.4)
+├── huggingface_repo_url.txt               # Enlace oficial al modelo en Hugging Face Hub
+├── README.md                              # Guía y memoria técnica completa del repositorio
+├── renders/                               # Paneles comparativos y resultados visuales (SD 1.4)
+├── bonus/                                 # App interactiva Streamlit y probador Colab
+├── extra/                                 # Estudio avanzado SDXL 1024px (A40 RunPod, 3 LoRAs, 4K)
+│   ├── README.md                          # Memoria del torneo de hiperparámetros
+│   ├── probador_sdxl_loras_colab.ipynb    # Probador interactivo en Colab para los 3 LoRAs SDXL
+│   ├── scripts/ (run_full_experiment.py)  # Pipeline maestro de entrenamiento distribuido
+│   ├── comparisons/ (master_grid_10x4.png)# Matriz Maestra y tiras comparativas a 4K
+│   └── models/ (*.safetensors)            # Adaptadores binarios finales (r=16, r=32, r=64)
+├── material_clase/                        # Cuadernos de clase, diapositivas y apuntes teóricos
+├── models/                                # Metadatos y documentación de adaptadores locales
+└── dist/                                  # Paquetes comprimidos (.zip) preparados para entrega</code></pre>
 
 <h2>10.2. Conclusiones y Aprendizajes Clave de Ingeniería</h2>
 <ol>
